@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { ArrowLeft, ArrowRight, Check, Cloud, CloudOff, Eye, LogOut, Play, RotateCcw, Sparkles, Volume2, X } from "lucide-react";
+import { Accessibility, ArrowLeft, ArrowRight, Check, Cloud, CloudOff, LogOut, Pause, Play, RotateCcw, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { authRedirectUrl, supabase, supabaseConfigured } from "@/lib/supabase";
 
 type Answers = {
@@ -23,35 +23,46 @@ const lens=[
   ["Personal projects","Building, repairing, creating, organizing, or learning independently can demonstrate technical skill, curiosity, and problem-solving."],
   ["Military experience","Mission focus, leadership, training, safety, logistics, and accountability can translate into clear civilian workplace skills."]
 ];
+const phases=[
+  {label:"Experience",start:0,end:3},
+  {label:"Skills",start:4,end:6},
+  {label:"Build Résumé",start:7,end:10},
+  {label:"Interview Ready",start:11,end:12},
+  {label:"District Map",start:13,end:16},
+];
 
 export default function ResumeDistrict(){
   const [journey,setJourney]=useState<Journey>(DEFAULT),[ready,setReady]=useState(false),[session,setSession]=useState<Session|null>(null),[authReady,setAuthReady]=useState(false);
-  const [email,setEmail]=useState(""),[sent,setSent]=useState(false),[open,setOpen]=useState<string|null>(null),[playing,setPlaying]=useState(false),[sync,setSync]=useState<"local"|"saving"|"saved"|"error">("local");
+  const [email,setEmail]=useState(""),[sent,setSent]=useState(false),[open,setOpen]=useState<string|null>(null),[playing,setPlaying]=useState(false),[narrationStarted,setNarrationStarted]=useState(false),[audioOn,setAudioOn]=useState(true),[sync,setSync]=useState<"local"|"saving"|"saved"|"error">("local");
   const video=useRef<HTMLVideoElement>(null); const scene=journey.scene; const numbered=String(scene+1).padStart(2,"0"); const activity=enhancements[scene];
   useEffect(()=>{ try{const saved=localStorage.getItem(STORAGE_KEY);if(saved)setJourney({...DEFAULT,...JSON.parse(saved)});}catch{} setReady(true);},[]);
   useEffect(()=>{if(ready)localStorage.setItem(STORAGE_KEY,JSON.stringify(journey));},[journey,ready]);
   useEffect(()=>{if(!supabase){setAuthReady(true);return;} supabase.auth.getSession().then(({data})=>{setSession(data.session);setAuthReady(true)});const {data}=supabase.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>data.subscription.unsubscribe();},[]);
   useEffect(()=>{if(!session||!supabase)return;supabase.from("module_progress").select("journey_state").eq("user_id",session.user.id).eq("module_id",MODULE_ID).maybeSingle().then(({data,error})=>{if(error)return setSync("error");if(data?.journey_state){const remote={...DEFAULT,...data.journey_state} as Journey;setJourney(local=>remote.completed.length>local.completed.length||remote.scene>local.scene?remote:local)}setSync("saved")});},[session?.user.id]);
   useEffect(()=>{if(!session||!supabase||!ready)return;setSync("saving");const id=setTimeout(async()=>{const done=journey.completed.includes("reflection");const {error}=await supabase!.from("module_progress").upsert({user_id:session.user.id,module_id:MODULE_ID,journey_state:journey,xp:journey.xp,is_complete:done,completed_at:journey.completionDate||null},{onConflict:"user_id,module_id"});if(!error&&journey.name)await supabase!.from("profiles").update({display_name:journey.name}).eq("user_id",session.user.id);setSync(error?"error":"saved")},800);return()=>clearTimeout(id);},[journey,session?.user.id,ready]);
-  useEffect(()=>{video.current?.pause();setPlaying(false);video.current?.load()},[scene]);
+  useEffect(()=>{video.current?.pause();setPlaying(false);setNarrationStarted(false);video.current?.load()},[scene]);
   const progress=Math.round(((scene+1)/13)*100);
   function update(p:Partial<Journey>){setJourney(j=>({...j,...p}))}
   function answer(p:Partial<Answers>){setJourney(j=>({...j,answers:{...j.answers,...p}}))}
   function complete(id:string,xp=50){setJourney(j=>({...j,xp:j.completed.includes(id)?j.xp:j.xp+xp,completed:j.completed.includes(id)?j.completed:[...j.completed,id],completionDate:id==="reflection"?(j.completionDate||new Date().toISOString()):j.completionDate}))}
   function next(){if(scene<16)update({scene:scene+1})}
+  function togglePlayback(){if(!video.current||scene>=14)return;if(playing)video.current.pause();else void video.current.play()}
+  function restart(){if(!window.confirm("Restart Resume District and clear this module's saved responses?"))return;setJourney({...DEFAULT,name:journey.name})}
   async function magic(){if(!supabase||!email.trim())return;const {error}=await supabase.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:authRedirectUrl()}});if(!error)setSent(true)}
   if(!ready||!authReady)return <main className="loading">Loading Resume District…</main>;
   if(supabaseConfigured&&!session)return <main className="auth"><section><div className="brand"><b>LU</b><span>LEVEL UP<small>RESUME DISTRICT</small></span></div><p className="kicker">YOUR NEXT DISTRICT IS OPEN</p><h1>Sign in to continue</h1><p>Your Level Up account carries your Discovery progress into Resume District.</p>{sent?<div className="notice"><Check/> Check your email for the secure sign-in link.</div>:<><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&magic()}/></label><button onClick={magic}>Email my sign-in link <ArrowRight/></button></>}</section></main>;
   if(!journey.name)return <main className="auth"><section><div className="brand"><b>LU</b><span>LEVEL UP<small>RESUME DISTRICT</small></span></div><p className="kicker">INTERVIEW UNLOCKED • EPISODE 1</p><h1>Show what you can do.</h1><p>Turn work, school, caregiving, service, and life experience into résumé-ready evidence.</p><label>What should we call you?<input autoFocus onKeyDown={e=>{if(e.key==="Enter"&&(e.target as HTMLInputElement).value.trim())update({name:(e.target as HTMLInputElement).value.trim()})}}/></label><p className="hint">Enter your name and press Enter to begin.</p></section></main>;
   return <main className="app">
-    <header><div className="brand"><b>LU</b><span>LEVEL UP<small>RESUME DISTRICT</small></span></div><div className="hud"><span>{titles[scene]}</span><div><i style={{width:`${Math.min(progress,100)}%`}}/></div><small>SCENE {scene+1} OF 17</small></div><strong>{journey.xp} XP</strong><span className={`cloud ${sync}`} title={sync}>{sync==="error"?<CloudOff/>:<Cloud/>}</span><button className="icon" onClick={()=>supabase?.auth.signOut()} aria-label="Sign out"><LogOut/></button></header>
+    <header><div className="brand"><b>LU</b><span>LEVEL UP<small>RESUME DISTRICT</small></span></div><div className="hud"><span>{titles[scene]}</span><div><i style={{width:`${Math.min(progress,100)}%`}}/></div><small>SCENE {scene+1} OF 17</small><strong>{journey.xp} XP</strong></div><div className="hud-actions"><span className={`cloud ${sync}`} title={sync}>{sync==="error"?<CloudOff/>:<Cloud/>}</span><button className="icon" disabled={scene===0} onClick={()=>update({scene:scene-1})} aria-label="Previous scene"><ArrowLeft/></button><button className="icon" onClick={()=>setOpen("access")} aria-label="Accessibility and scene description"><Accessibility/></button><button className="icon" disabled={scene>=14} onClick={togglePlayback} aria-label={playing?"Pause narration":"Play narration"}>{playing?<Pause/>:<Play/>}</button><button className="icon" disabled={scene>=14} onClick={()=>setAudioOn(v=>!v)} aria-label={audioOn?"Mute narration":"Turn on narration"}>{audioOn?<Volume2/>:<VolumeX/>}</button><button className="icon" onClick={restart} aria-label="Restart Resume District"><RotateCcw/></button><button className="icon" onClick={()=>supabase?.auth.signOut()} aria-label="Sign out"><LogOut/></button></div></header>
     <section className="stage" aria-label={titles[scene]}>
-      {scene<14&&<video ref={video} className="caption-video" src={`assets/resume/scenes/narration-${numbered}.mp4`} playsInline onEnded={()=>setPlaying(false)}/>} 
       <img src={`assets/resume/scenes/slide-${numbered}.webp`} alt={alt(scene)}/>
-      {scene<14&&<button className="narrate" onClick={()=>{if(!video.current)return;if(playing)video.current.pause();else video.current.play();setPlaying(!playing)}}><Volume2/>{playing?"Pause narration":"Play narration & captions"}</button>}
+      {scene<14&&<><div className={`caption-mask ${narrationStarted?"visible":""}`} aria-hidden="true"/><video ref={video} className="caption-video" src={`assets/resume/scenes/narration-${numbered}.mp4`} playsInline muted={!audioOn} preload="metadata" onPlay={()=>{setPlaying(true);setNarrationStarted(true)}} onPause={()=>setPlaying(false)} onEnded={()=>{setPlaying(false);setNarrationStarted(false)}}/></>}
+      {scene<14&&!narrationStarted&&<button className="resume-narration" onClick={togglePlayback}><Play/> Play narration</button>}
       {activity&&<button className="hotspot" onClick={()=>setOpen(activity.kind)}><Sparkles/>{journey.completed.includes(activity.kind)?"Review: ":""}{activity.label}</button>}
+      {scene<13&&<button className="next-world" onClick={next} aria-label="Continue to the next Resume District scene"><span>Continue journey</span></button>}
+      {scene===13&&<a className="next-world map-return" href={PORTAL}><span>Return to district map</span></a>}
     </section>
-    <nav><button disabled={scene===0} onClick={()=>update({scene:scene-1})}><ArrowLeft/> Back</button><button onClick={()=>setOpen("access")}><Eye/> Accessibility</button>{scene===13?<a href={PORTAL}>District map</a>:<button onClick={next} disabled={scene===16}>Continue <ArrowRight/></button>}</nav>
+    <nav className="stage-nav" aria-label="Resume District levels">{phases.map((phase,index)=>{const active=scene>=phase.start&&scene<=phase.end;const available=scene>=phase.start||index===0;const complete=scene>phase.end;return <button key={phase.label} disabled={!available} className={`${active?"active":""} ${complete?"complete":""}`} onClick={()=>update({scene:phase.start})}><span>{complete?<Check/>:index+1}</span>{phase.label}</button>})}</nav>
     {open&&<Modal title={modalTitle(open)} close={()=>setOpen(null)}>{renderActivity(open,journey,answer,complete,()=>setOpen(null))}</Modal>}
   </main>
 }
