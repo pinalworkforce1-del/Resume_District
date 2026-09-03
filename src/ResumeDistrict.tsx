@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { Accessibility, ArrowLeft, ArrowRight, Check, Cloud, CloudOff, LogOut, Pause, Play, RotateCcw, Sparkles, Volume2, VolumeX, X } from "lucide-react";
+import { Accessibility, ArrowLeft, ArrowRight, Check, Cloud, CloudOff, LogOut, Pause, Play, RotateCcw, SkipForward, Sparkles, Volume2, VolumeX, X } from "lucide-react";
 import { authRedirectUrl, supabase, supabaseConfigured } from "@/lib/supabase";
 
 type Answers = {
@@ -40,13 +40,20 @@ export default function ResumeDistrict(){
   useEffect(()=>{if(!supabase){setAuthReady(true);return;} supabase.auth.getSession().then(({data})=>{setSession(data.session);setAuthReady(true)});const {data}=supabase.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>data.subscription.unsubscribe();},[]);
   useEffect(()=>{if(!session||!supabase)return;supabase.from("module_progress").select("journey_state").eq("user_id",session.user.id).eq("module_id",MODULE_ID).maybeSingle().then(({data,error})=>{if(error)return setSync("error");if(data?.journey_state){const remote={...DEFAULT,...data.journey_state} as Journey;setJourney(local=>remote.completed.length>local.completed.length||remote.scene>local.scene?remote:local)}setSync("saved")});},[session?.user.id]);
   useEffect(()=>{if(!session||!supabase||!ready)return;setSync("saving");const id=setTimeout(async()=>{const done=journey.completed.includes("reflection");const {error}=await supabase!.from("module_progress").upsert({user_id:session.user.id,module_id:MODULE_ID,journey_state:journey,xp:journey.xp,is_complete:done,completed_at:journey.completionDate||null},{onConflict:"user_id,module_id"});if(!error&&journey.name)await supabase!.from("profiles").update({display_name:journey.name}).eq("user_id",session.user.id);setSync(error?"error":"saved")},800);return()=>clearTimeout(id);},[journey,session?.user.id,ready]);
-  useEffect(()=>{video.current?.pause();setPlaying(false);setNarrationStarted(false);video.current?.load()},[scene]);
+  useEffect(()=>{
+    const player=video.current;
+    if(!player||scene>=14)return;
+    player.pause();setPlaying(false);setNarrationStarted(false);player.load();
+    const attempt=window.setTimeout(()=>{void player.play().catch(()=>{setPlaying(false);setNarrationStarted(false)})},120);
+    return()=>window.clearTimeout(attempt);
+  },[scene]);
   const progress=Math.round(((scene+1)/13)*100);
   function update(p:Partial<Journey>){setJourney(j=>({...j,...p}))}
   function answer(p:Partial<Answers>){setJourney(j=>({...j,answers:{...j.answers,...p}}))}
   function complete(id:string,xp=50){setJourney(j=>({...j,xp:j.completed.includes(id)?j.xp:j.xp+xp,completed:j.completed.includes(id)?j.completed:[...j.completed,id],completionDate:id==="reflection"?(j.completionDate||new Date().toISOString()):j.completionDate}))}
   function next(){if(scene<16)update({scene:scene+1})}
   function togglePlayback(){if(!video.current||scene>=14)return;if(playing)video.current.pause();else void video.current.play()}
+  function skipNarration(){if(!video.current)return;video.current.pause();if(Number.isFinite(video.current.duration))video.current.currentTime=video.current.duration;setPlaying(false);setNarrationStarted(false)}
   function restart(){if(!window.confirm("Restart Resume District and clear this module's saved responses?"))return;setJourney({...DEFAULT,name:journey.name})}
   async function magic(){if(!supabase||!email.trim())return;const {error}=await supabase.auth.signInWithOtp({email:email.trim(),options:{emailRedirectTo:authRedirectUrl()}});if(!error)setSent(true)}
   if(!ready||!authReady)return <main className="loading">Loading Resume District…</main>;
@@ -58,6 +65,7 @@ export default function ResumeDistrict(){
       <img src={`assets/resume/scenes/slide-${numbered}.webp`} alt={alt(scene)}/>
       {scene<14&&<><div className={`caption-mask ${narrationStarted?"visible":""}`} aria-hidden="true"/><video ref={video} className="caption-video" src={`assets/resume/scenes/narration-${numbered}.mp4`} playsInline muted={!audioOn} preload="metadata" onPlay={()=>{setPlaying(true);setNarrationStarted(true)}} onPause={()=>setPlaying(false)} onEnded={()=>{setPlaying(false);setNarrationStarted(false)}}/></>}
       {scene<14&&!narrationStarted&&<button className="resume-narration" onClick={togglePlayback}><Play/> Play narration</button>}
+      {scene<14&&narrationStarted&&<button className="skip-narration" onClick={skipNarration}><SkipForward/> Skip narration</button>}
       {activity&&<button className="hotspot" onClick={()=>setOpen(activity.kind)}><Sparkles/>{journey.completed.includes(activity.kind)?"Review: ":""}{activity.label}</button>}
       {scene<13&&<button className="next-world" onClick={next} aria-label="Continue to the next Resume District scene"><span>Continue journey</span></button>}
       {scene===13&&<a className="next-world map-return" href={PORTAL}><span>Return to district map</span></a>}
