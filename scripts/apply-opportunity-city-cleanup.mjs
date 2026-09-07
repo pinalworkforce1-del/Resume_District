@@ -84,12 +84,6 @@ replaceOne(
 );
 
 replaceOne(
-  "stage artwork fill",
-  '<section className="stage" aria-label={titles[scene]}>',
-  '<section className="stage stage-art-fill" style={{backgroundImage:`url(${ASSETS}/slide-${num}.webp)`}} aria-label={titles[scene]}>'
-);
-
-replaceOne(
   "brand plus email scene",
   '{scene===8&&interactionReady&&<button className={`image-zone digital-zone visible-cue ${j.completed.includes("brand")?"done":""}`} onClick={()=>setModal("brand")} aria-label="Explore positive digital presence"><span>Explore positive digital presence</span><b>Explore digital presence</b></button>}',
   '{scene===8&&interactionReady&&<><button className={`image-zone digital-zone visible-cue ${j.completed.includes("brand")?"done":""}`} onClick={()=>setModal("brand")} aria-label="Explore positive digital presence"><span>Explore positive digital presence</span><b>Explore digital presence</b></button><button className={`activity-trigger ${j.completed.includes("email")?"done":""}`} onClick={()=>setModal("email")}>✦ Check your professional email</button></>}'
@@ -116,4 +110,5 @@ replaceOne(
 fs.writeFileSync(path, source);
 console.log("Applied Resume District Opportunity City cleanup.");
 console.log("Core route: 0 → 2 → 3 → 5 → 7 → 8 → 9 → 10 → 12");
+console.log("Clean scene artwork is used directly; no legacy footer fill/mask is applied.");
 console.log("Skipped legacy scenes: 1 (old map), 4 (old interview access), 11 (old interview gate), 13–16 (old previews).");
