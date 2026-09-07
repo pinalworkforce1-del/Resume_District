@@ -29,11 +29,19 @@ const hiddenTrigger = await page.locator('.shell-continue-trigger').evaluate(el=
 }));
 check(hiddenTrigger.left.startsWith('-9999') && hiddenTrigger.opacity === '0' && hiddenTrigger.pointer === 'none' && hiddenTrigger.width === '1px' && hiddenTrigger.height === '1px', 'legacy artwork forward trigger is functionally hidden from learner interaction');
 
-await page.waitForTimeout(500);
 const mask = page.locator('.caption-mask');
 check(await mask.count() === 1, 'caption backdrop exists');
 const maskBg = await mask.evaluate(el=>getComputedStyle(el).backgroundImage + getComputedStyle(el).backgroundColor);
 check(maskBg.includes('0.6') || maskBg.includes('0.60') || maskBg.includes('rgba(0, 0, 0, 0.6)'), 'caption backdrop is semi-transparent');
+
+const firstVideo = page.locator('.caption-video');
+await page.locator('#level-up-scene-rail [data-shell="play"]').click();
+await page.waitForTimeout(500);
+const videoState = await firstVideo.evaluate(v=>({readyState:v.readyState,duration:v.duration,src:v.getAttribute('src')||'',playing:!v.paused && !v.ended}));
+check(videoState.readyState >= 1 && Number.isFinite(videoState.duration) && videoState.duration > 0, 'opening narration video loads metadata');
+check(videoState.src.endsWith('narration-01.mp4'), 'opening scene uses replacement narration-01');
+check(videoState.playing, 'opening narration plays from the Level Up rail');
+check(await mask.evaluate(el=>el.classList.contains('visible')), 'caption backdrop activates while narration plays');
 
 const expected = [
   'Welcome to Resume District',
@@ -50,6 +58,14 @@ const expected = [
 for (let i=0;i<expected.length;i++) {
   const title = (await page.locator('.hud span').first().textContent())?.trim();
   check(title === expected[i], `route scene ${i+1}: ${expected[i]}`);
+  if (expected[i] === 'Protect Your Brand') {
+    const src = await page.locator('.caption-video').getAttribute('src');
+    check((src||'').endsWith('narration-09.mp4'), 'Protect Your Brand uses replacement narration-09');
+  }
+  if (expected[i] === 'Level Up Reflection') {
+    const src = await page.locator('.caption-video').getAttribute('src');
+    check((src||'').endsWith('narration-13.mp4'), 'Reflection/completion scene uses replacement narration-13');
+  }
   if (i < expected.length-1) {
     await page.locator('#level-up-scene-rail [data-shell="continue"]').click();
     await page.waitForTimeout(100);
