@@ -18,20 +18,36 @@ assert(src.includes('className="next-world shell-continue-trigger"'), 'learner-f
 assert(src.includes('scene<12&&<button className="next-world shell-continue-trigger"'), 'forward shell trigger stops at reflection/completion');
 assert(main.includes('import "./level-up-standard.css";') && main.includes('import "./level-up-shell";'), 'Level Up UX shell is loaded');
 assert(shell.includes('data-shell="continue"') && shell.includes('currentContinue()?.click()'), 'right-rail Continue owns forward movement');
-assert(src.includes('className="stage stage-art-fill"') && src.includes('backgroundImage:`url(${ASSETS}/slide-${num}.webp)`'), 'stage uses scene art as a full-display continuation background');
-assert(css.includes('.level-up-standard .stage-art-fill>img{object-fit:contain!important') && css.includes('mask-image:linear-gradient'), 'legacy footer is faded out while preserving hotspot coordinates');
-assert(css.includes('background-size:116% auto!important'), 'stage background fills the legacy footer area with artwork');
-assert(css.includes('.level-up-standard .caption-video{object-fit:contain!important'), 'caption/narration layer uses matching contain framing');
-assert(css.includes('rgba(0,0,0,.60)') && css.includes('height:11%'), 'caption backdrop uses approved semi-transparent lower strip');
+assert(!src.includes('stage-art-fill') && !src.includes('backgroundImage:`url(${ASSETS}/slide-${num}.webp)`'), 'clean scene artwork is rendered directly without duplicate background');
+assert(css.includes('.level-up-standard .stage>img{object-fit:cover!important') && css.includes('mask-image:none!important'), 'clean scene artwork fills the stage without the legacy footer mask');
+assert(!css.includes('background-size:116% auto!important') && !css.includes('.stage-art-fill'), 'legacy zoom/fill workaround is removed');
+assert(css.includes('.level-up-standard .caption-video{object-fit:cover!important'), 'caption/narration layer aligns to the clean 16:9 scene');
+assert(css.includes('rgba(0,0,0,.60)') && css.includes('height:11%'), 'caption backdrop uses approved semi-transparent lower strip over the artwork');
 
-const expected = {
+const expectedNarration = {
   'public/assets/resume/scenes/narration-01.mp4': 1764042,
   'public/assets/resume/scenes/narration-09.mp4': 602588,
   'public/assets/resume/scenes/narration-13.mp4': 501377,
 };
-for (const [file,size] of Object.entries(expected)) {
+for (const [file,size] of Object.entries(expectedNarration)) {
   assert(fs.existsSync(file), `${file} exists`);
   assert(fs.statSync(file).size === size, `${file} matches replacement upload size`);
 }
 
-console.log('\nResume District Opportunity City cleanup verification passed.');
+const expectedCleanScenes = {
+  'public/assets/resume/scenes/slide-01.webp': 514066,
+  'public/assets/resume/scenes/slide-03.webp': 589306,
+  'public/assets/resume/scenes/slide-04.webp': 564080,
+  'public/assets/resume/scenes/slide-06.webp': 470346,
+  'public/assets/resume/scenes/slide-07.webp': 401436,
+  'public/assets/resume/scenes/slide-08.webp': 523004,
+  'public/assets/resume/scenes/slide-09.webp': 433412,
+  'public/assets/resume/scenes/slide-10.webp': 536754,
+  'public/assets/resume/scenes/slide-11.webp': 367218,
+};
+for (const [file,size] of Object.entries(expectedCleanScenes)) {
+  assert(fs.existsSync(file), `${file} exists`);
+  assert(fs.statSync(file).size === size, `${file} matches clean PPT export`);
+}
+
+console.log('\nResume District clean-scene verification passed.');

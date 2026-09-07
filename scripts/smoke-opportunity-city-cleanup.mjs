@@ -15,10 +15,23 @@ if (await nameInput.count()) {
 await page.locator('main.app.level-up-standard').waitFor({state:'visible'});
 await page.locator('#level-up-scene-rail').waitFor({state:'visible'});
 
-const imgFit = await page.locator('.stage>img').evaluate(el=>getComputedStyle(el).objectFit);
-check(imgFit === 'contain', 'full scene image is contained without crop/stretch');
+const img = page.locator('.stage>img');
+const imgFit = await img.evaluate(el=>getComputedStyle(el).objectFit);
+check(imgFit === 'cover', 'clean scene image fills the 16:9 stage');
+const imageInfo = await img.evaluate(el=>({
+  naturalWidth:el.naturalWidth,
+  naturalHeight:el.naturalHeight,
+  mask:getComputedStyle(el).maskImage,
+  webkitMask:getComputedStyle(el).webkitMaskImage
+}));
+check(imageInfo.naturalWidth > 0 && imageInfo.naturalHeight > 0, 'clean scene artwork loads');
+check(Math.abs((imageInfo.naturalWidth/imageInfo.naturalHeight)-(16/9)) < 0.01, 'clean scene artwork is 16:9');
+check((imageInfo.mask === 'none' || imageInfo.mask === '') && (imageInfo.webkitMask === 'none' || imageInfo.webkitMask === ''), 'legacy footer mask is absent');
+const stageBg = await page.locator('.stage').evaluate(el=>getComputedStyle(el).backgroundImage);
+check(stageBg === 'none', 'no duplicate scene background is used');
+
 const videoFit = await page.locator('.caption-video').evaluate(el=>getComputedStyle(el).objectFit);
-check(videoFit === 'contain', 'caption/narration video aligns to full scene');
+check(videoFit === 'cover', 'caption/narration layer aligns to the full clean scene');
 check(await page.locator('#level-up-scene-rail [data-shell="continue"]').isVisible(), 'HUD/right rail Continue is visible');
 const hiddenTrigger = await page.locator('.shell-continue-trigger').evaluate(el=>({
   left:getComputedStyle(el).left,
@@ -30,9 +43,13 @@ const hiddenTrigger = await page.locator('.shell-continue-trigger').evaluate(el=
 check(hiddenTrigger.left.startsWith('-9999') && hiddenTrigger.opacity === '0' && hiddenTrigger.pointer === 'none' && hiddenTrigger.width === '1px' && hiddenTrigger.height === '1px', 'legacy artwork forward trigger is functionally hidden from learner interaction');
 
 const mask = page.locator('.caption-mask');
-check(await mask.count() === 1, 'caption backdrop exists');
-const maskBg = await mask.evaluate(el=>getComputedStyle(el).backgroundImage + getComputedStyle(el).backgroundColor);
-check(maskBg.includes('0.6') || maskBg.includes('0.60') || maskBg.includes('rgba(0, 0, 0, 0.6)'), 'caption backdrop is semi-transparent');
+check(await mask.count() === 1, 'caption backdrop exists over the artwork');
+const maskStyle = await mask.evaluate(el=>({
+  bg:getComputedStyle(el).backgroundImage + getComputedStyle(el).backgroundColor,
+  height:getComputedStyle(el).height,
+  bottom:getComputedStyle(el).bottom
+}));
+check(maskStyle.bg.includes('0.6') || maskStyle.bg.includes('0.60') || maskStyle.bg.includes('rgba(0, 0, 0, 0.6)'), 'caption backdrop is semi-transparent');
 
 const firstSrc = await page.locator('.caption-video').getAttribute('src');
 check((firstSrc||'').endsWith('narration-01.mp4'), 'opening scene uses replacement narration-01');
