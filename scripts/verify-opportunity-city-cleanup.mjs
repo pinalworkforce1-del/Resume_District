@@ -18,7 +18,9 @@ assert(src.includes('className="next-world shell-continue-trigger"'), 'learner-f
 assert(src.includes('scene<12&&<button className="next-world shell-continue-trigger"'), 'forward shell trigger stops at reflection/completion');
 assert(main.includes('import "./level-up-standard.css";') && main.includes('import "./level-up-shell";'), 'Level Up UX shell is loaded');
 assert(shell.includes('data-shell="continue"') && shell.includes('currentContinue()?.click()'), 'right-rail Continue owns forward movement');
-assert(css.includes('.level-up-standard .stage>img{object-fit:contain!important'), 'full WEBP scene uses contain framing');
+assert(src.includes('className="stage stage-art-fill"') && src.includes('backgroundImage:`url(${ASSETS}/slide-${num}.webp)`'), 'stage uses scene art as a full-display continuation background');
+assert(css.includes('.level-up-standard .stage-art-fill>img{object-fit:contain!important') && css.includes('mask-image:linear-gradient'), 'legacy footer is faded out while preserving hotspot coordinates');
+assert(css.includes('background-size:116% auto!important'), 'stage background fills the legacy footer area with artwork');
 assert(css.includes('.level-up-standard .caption-video{object-fit:contain!important'), 'caption/narration layer uses matching contain framing');
 assert(css.includes('rgba(0,0,0,.60)') && css.includes('height:11%'), 'caption backdrop uses approved semi-transparent lower strip');
 

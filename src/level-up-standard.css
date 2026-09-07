@@ -5,13 +5,14 @@
 .app.level-up-standard>.level-up-scene-rail{grid-column:2;grid-row:2}
 .app.level-up-standard>.phase-nav{grid-column:1;grid-row:3;width:100%;max-width:none}
 
-/* Preserve the complete scene composition inside the Level Up stage. No crop or stretch. */
-.level-up-standard .stage>img{object-fit:contain!important;background:#02040d}
+/* Legacy Resume slide art includes an old black footer/Next Level strip. Keep the original scene coordinates for hotspots, but visually replace that footer with a filled continuation of the scene so the stage reads as one immersive image. */
+.level-up-standard .stage-art-fill{background-size:116% auto!important;background-position:center top!important;background-repeat:no-repeat!important}
+.level-up-standard .stage-art-fill>img{object-fit:contain!important;background:transparent;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 80%,rgba(0,0,0,.94) 82%,rgba(0,0,0,.45) 85%,transparent 87%);mask-image:linear-gradient(to bottom,#000 0%,#000 80%,rgba(0,0,0,.94) 82%,rgba(0,0,0,.45) 85%,transparent 87%)}
 
-/* Full-stage narration/caption layer aligned to the same contained artwork. */
+/* Full-stage narration/caption layer. The narration MP4 is black with bright caption text; screen blend makes black transparent so captions sit over the scene. */
 .level-up-standard .caption-video{object-fit:contain!important;mix-blend-mode:screen;background:transparent}
 
-/* Short semi-transparent caption backdrop: readable without covering the scene. */
+/* Short semi-transparent caption backdrop: readable while remaining over the artwork rather than on a separate black footer. */
 .level-up-standard .caption-mask{left:10%;right:10%;bottom:1%;height:11%;background:linear-gradient(90deg,transparent,rgba(0,0,0,.60) 12%,rgba(0,0,0,.60) 88%,transparent);opacity:0;pointer-events:none}
 .level-up-standard .caption-mask.visible{opacity:1}
 

@@ -1,7 +1,7 @@
 name: Test Resume District Cleanup
 on:
   push:
-    branches: [opportunity-city-cleanup]
+    branches: [opportunity-city-cleanup, resume-stage-crop-fix]
   workflow_dispatch:
 permissions:
   contents: read

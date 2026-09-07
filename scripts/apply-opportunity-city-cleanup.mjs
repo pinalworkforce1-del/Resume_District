@@ -84,6 +84,12 @@ replaceOne(
 );
 
 replaceOne(
+  "stage artwork fill",
+  '<section className="stage" aria-label={titles[scene]}>',
+  '<section className="stage stage-art-fill" style={{backgroundImage:`url(${ASSETS}/slide-${num}.webp)`}} aria-label={titles[scene]}>'
+);
+
+replaceOne(
   "brand plus email scene",
   '{scene===8&&interactionReady&&<button className={`image-zone digital-zone visible-cue ${j.completed.includes("brand")?"done":""}`} onClick={()=>setModal("brand")} aria-label="Explore positive digital presence"><span>Explore positive digital presence</span><b>Explore digital presence</b></button>}',
   '{scene===8&&interactionReady&&<><button className={`image-zone digital-zone visible-cue ${j.completed.includes("brand")?"done":""}`} onClick={()=>setModal("brand")} aria-label="Explore positive digital presence"><span>Explore positive digital presence</span><b>Explore digital presence</b></button><button className={`activity-trigger ${j.completed.includes("email")?"done":""}`} onClick={()=>setModal("email")}>✦ Check your professional email</button></>}'
