@@ -1,14 +1,19 @@
 /* Level Up UX Standard v1 — shared presentation shell */
 .app.level-up-standard{max-width:1740px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 190px;grid-template-rows:auto auto auto;gap:0 16px;align-items:start}
 .app.level-up-standard>.topbar{grid-column:1/-1;grid-row:1;position:sticky;top:0;z-index:20;width:100%;margin:0 0 12px}
-.app.level-up-standard>.stage{grid-column:1;grid-row:2;width:100%;max-width:none;margin:0}
+.app.level-up-standard>.stage{grid-column:1;grid-row:2;width:100%;max-width:none;margin:0;background:#02040d;isolation:isolate}
 .app.level-up-standard>.level-up-scene-rail{grid-column:2;grid-row:2}
 .app.level-up-standard>.phase-nav{grid-column:1;grid-row:3;width:100%;max-width:none}
 
-/* First Day Challenge caption treatment: full-screen caption video with a short, transparent black fade behind text. */
-.level-up-standard .caption-mask{left:10%;right:10%;bottom:1%;height:11%;background:linear-gradient(90deg,transparent,rgba(0,0,0,.62) 12%,rgba(0,0,0,.62) 88%,transparent);opacity:0}
+/* Preserve the complete scene composition inside the Level Up stage. No crop or stretch. */
+.level-up-standard .stage>img{object-fit:contain!important;background:#02040d}
+
+/* Full-stage narration/caption layer aligned to the same contained artwork. */
+.level-up-standard .caption-video{object-fit:contain!important;mix-blend-mode:screen;background:transparent}
+
+/* Short semi-transparent caption backdrop: readable without covering the scene. */
+.level-up-standard .caption-mask{left:10%;right:10%;bottom:1%;height:11%;background:linear-gradient(90deg,transparent,rgba(0,0,0,.60) 12%,rgba(0,0,0,.60) 88%,transparent);opacity:0;pointer-events:none}
 .level-up-standard .caption-mask.visible{opacity:1}
-.level-up-standard .caption-video{object-fit:fill;mix-blend-mode:screen;background:transparent}
 
 /* Narration and progression live in the right rail. The hidden trigger exists only so React owns scene routing; it is never a learner-facing hotspot. */
 .level-up-standard .stage>.skip,.level-up-standard .stage>.play-fallback{display:none!important}
