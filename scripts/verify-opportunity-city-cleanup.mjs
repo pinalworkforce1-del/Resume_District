@@ -14,8 +14,8 @@ assert(!src.includes('Interview Arena is now unlocked.'), 'legacy direct Intervi
 assert(!src.includes('Return to District Map'), 'legacy district-map return removed');
 assert(src.includes('Return to Opportunity City'), 'completion returns to Opportunity City');
 assert(src.includes('Check your professional email'), 'professional email checkpoint moved into retained flow');
-assert(src.includes('className="shell-continue-trigger"'), 'learner-facing in-image next hotspot replaced by shell trigger');
-assert(src.includes('scene<12&&<button className="shell-continue-trigger"'), 'forward shell trigger stops at reflection/completion');
+assert(src.includes('className="next-world shell-continue-trigger"'), 'learner-facing in-image next hotspot replaced by hidden shell trigger');
+assert(src.includes('scene<12&&<button className="next-world shell-continue-trigger"'), 'forward shell trigger stops at reflection/completion');
 assert(main.includes('import "./level-up-standard.css";') && main.includes('import "./level-up-shell";'), 'Level Up UX shell is loaded');
 assert(shell.includes('data-shell="continue"') && shell.includes('currentContinue()?.click()'), 'right-rail Continue owns forward movement');
 assert(css.includes('.level-up-standard .stage>img{object-fit:contain!important'), 'full WEBP scene uses contain framing');
