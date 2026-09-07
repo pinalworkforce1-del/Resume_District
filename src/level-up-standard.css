@@ -10,9 +10,9 @@
 .level-up-standard .caption-mask.visible{opacity:1}
 .level-up-standard .caption-video{object-fit:fill;mix-blend-mode:screen;background:transparent}
 
-/* Narration and progression live in the right rail, so the learner never has to scroll to find Continue. */
+/* Narration and progression live in the right rail. The hidden trigger exists only so React owns scene routing; it is never a learner-facing hotspot. */
 .level-up-standard .stage>.skip,.level-up-standard .stage>.play-fallback{display:none!important}
-.level-up-standard .next-world{opacity:0;pointer-events:none}
+.shell-continue-trigger{position:absolute!important;width:1px!important;height:1px!important;left:-9999px!important;bottom:auto!important;padding:0!important;margin:0!important;border:0!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important}
 .level-up-scene-rail{position:sticky;top:96px;display:grid;gap:10px;padding:14px;border:1px solid #236e96;border-radius:18px;background:linear-gradient(180deg,rgba(9,21,47,.96),rgba(8,11,37,.96));box-shadow:0 16px 40px rgba(0,0,0,.55)}
 .level-up-scene-rail small{color:#72eaff;font-weight:900;letter-spacing:.1em;text-align:center;margin:2px 0 4px}
 .level-up-scene-rail button{width:100%;min-height:50px;border:1px solid #269acb;background:#07172f;color:#fff;border-radius:12px;padding:10px;display:flex;align-items:center;gap:9px;text-align:left;font-weight:800;cursor:pointer}
