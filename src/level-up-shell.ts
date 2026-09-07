@@ -10,7 +10,7 @@ function currentVideo() {
 }
 
 function currentContinue() {
-  return document.querySelector<HTMLButtonElement>(".stage .next-world");
+  return document.querySelector<HTMLButtonElement>(".stage .shell-continue-trigger");
 }
 
 function buildRail() {
