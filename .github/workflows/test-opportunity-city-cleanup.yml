@@ -1,0 +1,26 @@
+name: Test Resume District Cleanup
+on:
+  push:
+    branches: [opportunity-city-cleanup]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Apply cleanup transform
+        run: node scripts/apply-opportunity-city-cleanup.mjs
+      - name: Verify cleanup behavior
+        run: node scripts/verify-opportunity-city-cleanup.mjs
+      - name: Production build
+        env:
+          VITE_SUPABASE_URL: https://dnijrzotfyvmmnmueknk.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_qSEo4iczJBozMaSIvTKisw_BsJy-iPc
+        run: npm run build
