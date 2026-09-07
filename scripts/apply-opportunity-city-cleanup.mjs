@@ -98,7 +98,7 @@ replaceOne(
 replaceOne(
   "next hotspot stop at reflection",
   '{scene<13&&<button className="next-world"',
-  '{scene<12&&<button className="next-world"'
+  '{scene<12&&<button className="shell-continue-trigger"'
 );
 
 replaceOne(
@@ -111,3 +111,4 @@ fs.writeFileSync(path, source);
 console.log("Applied Resume District Opportunity City cleanup.");
 console.log("Core route: 0 → 2 → 3 → 5 → 7 → 8 → 9 → 10 → 12");
 console.log("Skipped legacy scenes: 1 (old map), 4 (old interview access), 11 (old interview gate), 13–16 (old previews).");
+console.log("Forward movement is exposed only through the Level Up right-rail Continue control.");
