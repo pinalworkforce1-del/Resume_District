@@ -24,3 +24,24 @@ jobs:
           VITE_SUPABASE_URL: https://dnijrzotfyvmmnmueknk.supabase.co
           VITE_SUPABASE_ANON_KEY: sb_publishable_qSEo4iczJBozMaSIvTKisw_BsJy-iPc
         run: npm run build
+      - name: Install browser smoke dependency
+        run: npm install --no-save playwright@1.55.0
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Build local smoke version
+        env:
+          VITE_SUPABASE_URL: ''
+          VITE_SUPABASE_ANON_KEY: ''
+        run: npm run build
+      - name: Start preview server
+        run: nohup npx vite preview --host 127.0.0.1 --port 4173 >/tmp/resume-preview.log 2>&1 &
+      - name: Wait for preview
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/resume-preview.log
+          exit 1
+      - name: Rendered browser smoke test
+        run: node scripts/smoke-opportunity-city-cleanup.mjs
