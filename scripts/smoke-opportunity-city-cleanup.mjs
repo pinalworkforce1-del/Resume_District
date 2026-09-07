@@ -20,7 +20,14 @@ check(imgFit === 'contain', 'full scene image is contained without crop/stretch'
 const videoFit = await page.locator('.caption-video').evaluate(el=>getComputedStyle(el).objectFit);
 check(videoFit === 'contain', 'caption/narration video aligns to full scene');
 check(await page.locator('#level-up-scene-rail [data-shell="continue"]').isVisible(), 'HUD/right rail Continue is visible');
-check(!(await page.locator('.shell-continue-trigger').isVisible()), 'legacy artwork forward trigger is not learner-visible');
+const hiddenTrigger = await page.locator('.shell-continue-trigger').evaluate(el=>({
+  left:getComputedStyle(el).left,
+  opacity:getComputedStyle(el).opacity,
+  pointer:getComputedStyle(el).pointerEvents,
+  width:getComputedStyle(el).width,
+  height:getComputedStyle(el).height
+}));
+check(hiddenTrigger.left.startsWith('-9999') && hiddenTrigger.opacity === '0' && hiddenTrigger.pointer === 'none' && hiddenTrigger.width === '1px' && hiddenTrigger.height === '1px', 'legacy artwork forward trigger is functionally hidden from learner interaction');
 
 await page.waitForTimeout(500);
 const mask = page.locator('.caption-mask');
