@@ -1,4 +1,6 @@
 const RAIL_ID = "level-up-scene-rail";
+const PORTAL_URL = "https://pinalworkforce1-del.github.io/Level_Up_Portal/";
+const RETURN_LABEL = "Return to Opportunity City";
 
 function findHeaderButton(pattern: RegExp) {
   return Array.from(document.querySelectorAll<HTMLButtonElement>(".topbar .controls button"))
@@ -12,6 +14,66 @@ function currentVideo() {
 function currentContinue() {
   return document.querySelector<HTMLButtonElement>(".stage .shell-continue-trigger");
 }
+
+function delay(ms:number){
+  return new Promise<void>(resolve=>window.setTimeout(resolve,ms));
+}
+
+function returnButton(){
+  return findHeaderButton(/Sign out|Return to Opportunity City|Saving progress before returning/i);
+}
+
+function configureReturnButton(){
+  const button=returnButton();
+  if(!button||button.dataset.luReturning==="1")return;
+  button.setAttribute("aria-label",RETURN_LABEL);
+  button.title=RETURN_LABEL;
+}
+
+async function waitForCloudSave(button:HTMLButtonElement){
+  button.dataset.luReturning="1";
+  button.disabled=true;
+  button.setAttribute("aria-label","Saving progress before returning to Opportunity City");
+  button.title="Saving progress…";
+
+  // Resume District persists device state immediately and debounces the
+  // Supabase module_progress write for 800 ms. Wait for that save to begin,
+  // then allow the existing sync state to confirm completion.
+  await delay(1000);
+  const deadline=Date.now()+5000;
+  while(Date.now()<deadline&&document.querySelector(".sync.saving"))await delay(120);
+
+  if(document.querySelector(".sync.error")){
+    window.alert("Level Up saved your progress on this device, but could not confirm the cloud save yet. Please try Return to Opportunity City again in a moment.");
+    delete button.dataset.luReturning;
+    button.disabled=false;
+    button.setAttribute("aria-label",RETURN_LABEL);
+    button.title=RETURN_LABEL;
+    return false;
+  }
+  return true;
+}
+
+async function returnToOpportunityCity(button:HTMLButtonElement){
+  if(button.dataset.luReturning==="1")return;
+  if(await waitForCloudSave(button))window.location.href=PORTAL_URL;
+}
+
+// The native header control signs out of the shared Level Up session. Capture
+// that click before React receives it and convert it into a save-then-return
+// action so authentication, XP, progression, and Supabase history remain intact.
+document.addEventListener("click",event=>{
+  const target=event.target instanceof Element
+    ? event.target.closest<HTMLButtonElement>(".topbar .controls button")
+    : null;
+  if(!target)return;
+  const label=target.getAttribute("aria-label")||"";
+  if(!/Sign out|Return to Opportunity City|Saving progress before returning/i.test(label))return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation();
+  void returnToOpportunityCity(target);
+},true);
 
 function buildRail() {
   const rail = document.createElement("aside");
@@ -68,6 +130,7 @@ function bindVideo(video: HTMLVideoElement | null) {
 }
 
 function refreshRail() {
+  configureReturnButton();
   const app = document.querySelector<HTMLElement>("main.app");
   const stage = app?.querySelector<HTMLElement>(":scope > .stage");
   if (!app || !stage) return;
