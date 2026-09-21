@@ -18,6 +18,8 @@ const MODULE_ID="resume-district";
 const EMPTY:Journey={name:"",scene:0,xp:0,completed:[],answers:{},completionDate:""};
 const ASSETS="assets/resume/scenes";
 const PORTAL="https://pinalworkforce1-del.github.io/Level_Up_Portal/";
+const RESUME_BUILDER="https://pinalworkforce1-del.github.io/LU_Discovery/resume-builder-prototype.html";
+const MY_RESUMES="https://pinalworkforce1-del.github.io/LU_Discovery/my-resumes.html";
 const titles=["Enter Resume District","The District Map","No Experience? Look Again","Transferable Skills Unlocked","Interview Access","Build the Right Path","Recruiter Perspective","The Keyword Forge","Protect Your Brand","Integrity Unlocked","Your Résumé, Built","Interview Gate Unlocked","Level Up Reflection","Resume District","Interview Arena","First Day Challenge","Money Moves"];
 const alts=[
   "A learner enters a neon city where Resume District is the first destination.",
@@ -124,6 +126,7 @@ export default function ResumeDistrict(){
       <div className="controls">
         <span className={`sync ${sync}`} title={sync==="saved"?"Progress saved":sync==="saving"?"Saving progress":sync==="error"?"Save problem":"Saved locally"}>{sync==="error"?"☁̸":"☁"}</span>
         <button onClick={preview?()=>update({scene:1}):previous} disabled={scene===0} aria-label={preview?"Back to district map":"Previous scene"}>←</button>
+        <button className="resume-library" onClick={()=>window.open(MY_RESUMES,"_blank","noopener")} aria-label="Open My Résumés">My Résumés</button>
         <button onClick={()=>setModal("access")} aria-label="Accessibility and scene description">◉</button>
         <button onClick={toggle} disabled={scene>=13} aria-label={playing?"Pause narration":"Play narration"}>{playing?"Ⅱ":"▶"}</button>
         <button onClick={()=>setAudioOn(v=>!v)} disabled={scene>=13} aria-label={audioOn?"Mute narration":"Turn on narration"}>{audioOn?"🔊":"🔇"}</button>
@@ -152,8 +155,8 @@ export default function ResumeDistrict(){
       {scene===9&&interactionReady&&<button className="activity-trigger" onClick={()=>setModal("integrity")}>✦ Test résumé integrity</button>}
       {scene===10&&interactionReady&&<button className="activity-trigger" onClick={()=>setModal("builder")}>✦ Review your résumé plan</button>}
       {scene===12&&interactionReady&&!resumeComplete&&<button className="activity-trigger" onClick={()=>setModal("reflection")}>✦ Complete Resume District reflection</button>}
-      {scene===12&&resumeComplete&&<div className="completion-actions"><h2>Resume District Complete</h2><p>Interview Arena is now unlocked.</p><div><button onClick={()=>setModal("review")}>View Resume District Review</button><button onClick={()=>update({scene:1})}>Return to District Map</button><a className="primary-action" href={PORTAL}>Enter Interview Arena</a></div></div>}
-      {scene===12&&resumeComplete&&<a className="interview-icon-link" href={PORTAL} aria-label="Continue to Interview Arena from the unlocked arena icon"><span>Enter Interview Arena</span></a>}
+      {scene===12&&resumeComplete&&<div className="completion-actions"><h2>Reflection Complete ✓</h2><p>Put the evidence to work in Resume Builder. Your Level Up account will keep your working résumé and saved targeted versions.</p><div><a className="primary-action" href={RESUME_BUILDER}>Open Resume Builder →</a><a href={MY_RESUMES}>My Résumés</a><button onClick={()=>setModal("review")}>View Resume District Review</button><button onClick={()=>update({scene:1})}>Return to District Map</button><a href={PORTAL}>Enter Interview Arena</a></div></div>}
+      {scene===12&&resumeComplete&&<a className="interview-icon-link" href={PORTAL} aria-label="Interview Arena is available after Resume District"><span>Enter Interview Arena</span></a>}
       {preview&&<button className="preview-back" onClick={()=>update({scene:1})}>← Back to District Map</button>}
       {scene<13&&<button className="next-world" onClick={next} aria-label={scene===5?"Continue to Keyword Forge":"Continue to next scene"}><span>Continue</span></button>}
       {toast&&<div className="toast" role="status">{toast}</div>}
