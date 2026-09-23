@@ -43,8 +43,8 @@ replaceOne(
 
 replaceOne(
   "local state migration",
-  'useEffect(()=>{try{const x=localStorage.getItem(STORE);if(x)setJ({...EMPTY,...JSON.parse(x)});}catch{}setReady(true)},[]);',
-  'useEffect(()=>{try{const x=localStorage.getItem(STORE);if(x){const saved={...EMPTY,...JSON.parse(x)} as Journey;saved.scene=normalizeScene(saved.scene);setJ(saved)}}catch{}setReady(true)},[]);'
+  'useEffect(()=>{if(!authReady||!session)return;try{const x=localStorage.getItem(storeFor(session.user.id));if(x)setJ({...EMPTY,...JSON.parse(x)});else setJ(EMPTY);}catch{setJ(EMPTY)}setReady(true)},[authReady,session?.user.id]);',
+  'useEffect(()=>{if(!authReady||!session)return;try{const x=localStorage.getItem(storeFor(session.user.id));if(x){const saved={...EMPTY,...JSON.parse(x)} as Journey;saved.scene=normalizeScene(saved.scene);setJ(saved)}else setJ(EMPTY)}catch{setJ(EMPTY)}setReady(true)},[authReady,session?.user.id]);'
 );
 
 replaceOne(
