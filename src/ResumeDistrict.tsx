@@ -13,7 +13,8 @@ type Answers = {
   support?:string; lesson?:string; addThisWeek?:string; nextAction?:string;
 };
 type Journey={name:string;scene:number;xp:number;completed:string[];answers:Answers;completionDate:string};
-const STORE="level-up-resume-district-ux-v3";
+const STORE_BASE="level-up-resume-district-ux-v4";
+const storeFor=(userId:string)=>`${STORE_BASE}:${userId}`;
 const MODULE_ID="resume-district";
 const EMPTY:Journey={name:"",scene:0,xp:0,completed:[],answers:{},completionDate:""};
 const ASSETS="assets/resume/scenes";
@@ -88,8 +89,8 @@ export default function ResumeDistrict(){
   const [toast,setToast]=useState("");
   const video=useRef<HTMLVideoElement>(null);
   const scene=j.scene;
-  useEffect(()=>{try{const x=localStorage.getItem(STORE);if(x)setJ({...EMPTY,...JSON.parse(x)});}catch{}setReady(true)},[]);
-  useEffect(()=>{if(ready){localStorage.setItem(STORE,JSON.stringify(j));(window as any).LevelUpOfflineProgress?.save(MODULE_ID,j,{xp:j.xp,isComplete:j.completed.includes("reflection"),completedAt:j.completionDate||null})}},[j,ready]);
+  useEffect(()=>{if(!authReady||!session)return;try{const x=localStorage.getItem(storeFor(session.user.id));if(x)setJ({...EMPTY,...JSON.parse(x)});else setJ(EMPTY);}catch{setJ(EMPTY)}setReady(true)},[authReady,session?.user.id]);
+  useEffect(()=>{if(ready&&session){localStorage.setItem(storeFor(session.user.id),JSON.stringify(j));(window as any).LevelUpOfflineProgress?.save(MODULE_ID,j,{xp:j.xp,isComplete:j.completed.includes("reflection"),completedAt:j.completionDate||null})}},[j,ready,session?.user.id]);
   useEffect(()=>{if(!supabase){setAuthReady(true);return}supabase.auth.getSession().then(({data})=>{setSession(data.session);setAuthReady(true)});const {data}=supabase.auth.onAuthStateChange((_event,next)=>setSession(next));return()=>data.subscription.unsubscribe()},[]);
   useEffect(()=>{if(!session||!supabase)return;Promise.all([supabase.from("module_progress").select("journey_state").eq("user_id",session.user.id).eq("module_id",MODULE_ID).maybeSingle(),supabase.from("profiles").select("display_name").eq("user_id",session.user.id).maybeSingle()]).then(([progress,profile])=>{if(progress.error||profile.error){setSync("error");return}const canonical=(profile.data?.display_name||"").trim();setProfileName(canonical);if(progress.data?.journey_state){const remote={...EMPTY,...progress.data.journey_state} as Journey;setJ(local=>{const chosen=remote.completed.length>local.completed.length||remote.xp>local.xp?remote:local;return canonical?{...chosen,name:canonical}:chosen})}else if(canonical)setJ(local=>({...local,name:canonical}));setSync("saved")})},[session?.user.id]);
   useEffect(()=>{if(!session||!supabase||!ready)return;setSync("saving");const timer=setTimeout(async()=>{const done=j.completed.includes("reflection");const {error}=await supabase!.from("module_progress").upsert({user_id:session.user.id,module_id:MODULE_ID,journey_state:j,xp:j.xp,is_complete:done,completed_at:j.completionDate||null},{onConflict:"user_id,module_id"});if(!error)(window as any).LevelUpOfflineProgress?.markSynced(MODULE_ID);setSync(error?"error":"saved")},800);return()=>clearTimeout(timer)},[j,session?.user.id,ready]);
