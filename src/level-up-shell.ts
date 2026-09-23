@@ -44,12 +44,7 @@ async function waitForCloudSave(button:HTMLButtonElement){
   while(Date.now()<deadline&&document.querySelector(".sync.saving"))await delay(120);
 
   if(document.querySelector(".sync.error")){
-    window.alert("Level Up saved your progress on this device, but could not confirm the cloud save yet. Please try Return to Opportunity City again in a moment.");
-    delete button.dataset.luReturning;
-    button.disabled=false;
-    button.setAttribute("aria-label",RETURN_LABEL);
-    button.title=RETURN_LABEL;
-    return false;
+    button.title="Saved on this device • cloud sync pending";
   }
   return true;
 }
