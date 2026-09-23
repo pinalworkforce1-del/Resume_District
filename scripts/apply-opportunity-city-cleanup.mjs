@@ -43,8 +43,8 @@ replaceOne(
 
 replaceOne(
   "local state migration",
-  'useEffect(()=>{if(!authReady||!session)return;try{const x=localStorage.getItem(storeFor(session.user.id));if(x)setJ({...EMPTY,...JSON.parse(x)});else setJ(EMPTY);}catch{setJ(EMPTY)}setReady(true)},[authReady,session?.user.id]);',
-  'useEffect(()=>{if(!authReady||!session)return;try{const x=localStorage.getItem(storeFor(session.user.id));if(x){const saved={...EMPTY,...JSON.parse(x)} as Journey;saved.scene=normalizeScene(saved.scene);setJ(saved)}else setJ(EMPTY)}catch{setJ(EMPTY)}setReady(true)},[authReady,session?.user.id]);'
+  'useEffect(()=>{if(!authReady||!session)return;const cachedName=(localStorage.getItem(profileNameKey(session.user.id))||"").trim();try{const x=localStorage.getItem(storeFor(session.user.id));if(x){const parsed={...EMPTY,...JSON.parse(x)} as Journey;setJ({...parsed,name:cachedName||parsed.name||""});}else setJ(cachedName?{...EMPTY,name:cachedName}:EMPTY);}catch{setJ(cachedName?{...EMPTY,name:cachedName}:EMPTY)}setProfileName(cachedName);setReady(true)},[authReady,session?.user.id]);',
+  'useEffect(()=>{if(!authReady||!session)return;const cachedName=(localStorage.getItem(profileNameKey(session.user.id))||"").trim();try{const x=localStorage.getItem(storeFor(session.user.id));if(x){const parsed={...EMPTY,...JSON.parse(x)} as Journey;parsed.scene=normalizeScene(parsed.scene);setJ({...parsed,name:cachedName||parsed.name||""});}else setJ(cachedName?{...EMPTY,name:cachedName}:EMPTY);}catch{setJ(cachedName?{...EMPTY,name:cachedName}:EMPTY)}setProfileName(cachedName);setReady(true)},[authReady,session?.user.id]);'
 );
 
 replaceOne(
