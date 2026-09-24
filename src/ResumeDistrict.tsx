@@ -12,12 +12,12 @@ type Answers = {
   keywordTakeaway?:string; digitalTakeaway?:string; integrityTakeaway?:string; emailTakeaway?:string;
   support?:string; lesson?:string; addThisWeek?:string; nextAction?:string;
 };
-type Journey={name:string;scene:number;xp:number;completed:string[];answers:Answers;completionDate:string};
+type Journey={name:string;scene:number;xp:number;completed:string[];answers:Answers;completionDate:string;playbackRate:number;reducedMotion:boolean;largeText:boolean};
 const STORE_BASE="level-up-resume-district-ux-v4";
 const storeFor=(userId:string)=>`${STORE_BASE}:${userId}`;
 const MODULE_ID="resume-district";
 const profileNameKey=(userId:string)=>`level-up-profile-name-v1:${userId}`;
-const EMPTY:Journey={name:"",scene:0,xp:0,completed:[],answers:{},completionDate:""};
+const EMPTY:Journey={name:"",scene:0,xp:0,completed:[],answers:{},completionDate:"",playbackRate:1,reducedMotion:false,largeText:false};
 const ASSETS="assets/resume/scenes";
 const PORTAL="https://pinalworkforce1-del.github.io/Level_Up_Portal/";
 const RESUME_BUILDER="https://pinalworkforce1-del.github.io/LU_Discovery/resume-builder-prototype.html";
@@ -96,6 +96,7 @@ export default function ResumeDistrict(){
   useEffect(()=>{if(!session||!supabase)return;Promise.all([supabase.from("module_progress").select("journey_state").eq("user_id",session.user.id).eq("module_id",MODULE_ID).maybeSingle(),supabase.from("profiles").select("display_name").eq("user_id",session.user.id).maybeSingle()]).then(([progress,profile])=>{if(progress.error||profile.error){setSync("error");return}const canonical=(profile.data?.display_name||"").trim();if(canonical)localStorage.setItem(profileNameKey(session.user.id),canonical);setProfileName(canonical||profileName);if(progress.data?.journey_state){const remote={...EMPTY,...progress.data.journey_state} as Journey;setJ(local=>{const chosen=remote.completed.length>local.completed.length||remote.xp>local.xp?remote:local;return canonical?{...chosen,name:canonical}:chosen})}else if(canonical)setJ(local=>({...local,name:canonical}));setSync("saved")})},[session?.user.id]);
   useEffect(()=>{if(!session||!supabase||!ready)return;setSync("saving");const timer=setTimeout(async()=>{const done=j.completed.includes("reflection");const {error}=await supabase!.from("module_progress").upsert({user_id:session.user.id,module_id:MODULE_ID,journey_state:j,xp:j.xp,is_complete:done,completed_at:j.completionDate||null},{onConflict:"user_id,module_id"});if(!error)(window as any).LevelUpOfflineProgress?.markSynced(MODULE_ID);setSync(error?"error":"saved")},800);return()=>clearTimeout(timer)},[j,session?.user.id,ready]);
   useEffect(()=>{video.current?.pause();setPlaying(false);setStarted(false);setInteractionReady(scene>=13);video.current?.load();},[scene]);
+  useEffect(()=>{if(video.current)video.current.playbackRate=j.playbackRate||1},[j.playbackRate,scene]);
   useEffect(()=>{if(!video.current||scene>=13)return;const t=setTimeout(()=>video.current?.play().catch(()=>{}),220);return()=>clearTimeout(t)},[scene]);
   const required=useMemo(()=>["experience-source","translator","anatomy","keywords","brand","integrity","builder","reflection"],[]);
   const resumeComplete=j.completed.includes("reflection");
@@ -121,24 +122,24 @@ export default function ResumeDistrict(){
   const skillDone=skillLessons.filter(s=>j.completed.includes("skill-"+s[0])).length;
   const tipDone=tipNames.filter(t=>j.completed.includes("tip-"+slug(t))).length;
   const bonusUnlocked=j.completed.includes("anatomy")&&tipDone>=3;
-  return <main className="app">
+  return <main className={`app ${j.largeText?"large-text":""} ${j.reducedMotion?"reduce-motion":""}`}>
     <header className="topbar">
       <div className="brand"><b>LU</b><span>LEVEL UP<small>RESUME DISTRICT</small></span></div>
       <div className="hud"><span>{titles[scene]}</span><div><i style={{width:`${Math.min((visibleScene/visibleSceneCount)*100,100)}%`}}/></div><small>{preview?"DISTRICT PREVIEW":bonus?"BONUS SCENE":`SCENE ${visibleScene} OF ${visibleSceneCount}`}</small><strong>{j.xp} XP</strong></div>
       <div className="controls">
         <span className={`sync ${sync}`} title={sync==="saved"?"Progress saved":sync==="saving"?"Saving progress":sync==="error"?"Save problem":"Saved locally"}>{sync==="error"?"☁̸":"☁"}</span>
-        <button onClick={preview?()=>update({scene:1}):previous} disabled={scene===0} aria-label={preview?"Back to district map":"Previous scene"}>←</button>
+        <button className="scene-source-control" onClick={preview?()=>update({scene:1}):previous} disabled={scene===0} aria-label={preview?"Back to district map":"Previous scene"}>←</button>
         <button className="resume-library" onClick={()=>window.open(MY_RESUMES,"_blank","noopener")} aria-label="Open My Résumés">My Résumés</button>
-        <button onClick={()=>setModal("access")} aria-label="Accessibility and scene description">◉</button>
-        <button onClick={toggle} disabled={scene>=13} aria-label={playing?"Pause narration":"Play narration"}>{playing?"Ⅱ":"▶"}</button>
-        <button onClick={()=>setAudioOn(v=>!v)} disabled={scene>=13} aria-label={audioOn?"Mute narration":"Turn on narration"}>{audioOn?"🔊":"🔇"}</button>
+        <button className="scene-source-control" onClick={()=>setModal("access")} aria-label="Accessibility and scene description">◉</button>
+        <button className="scene-source-control" onClick={toggle} disabled={scene>=13} aria-label={playing?"Pause narration":"Play narration"}>{playing?"Ⅱ":"▶"}</button>
+        <button className="scene-source-control" onClick={()=>setAudioOn(v=>!v)} disabled={scene>=13} aria-label={audioOn?"Mute narration":"Turn on narration"}>{audioOn?"🔊":"🔇"}</button>
         <button onClick={restart} aria-label="Restart Resume District">↻</button>
-        <button onClick={()=>supabase?.auth.signOut()} aria-label="Sign out">⇥</button>
+        <button onClick={()=>supabase?.auth.signOut()} aria-label="Return to Opportunity City" title="Return to Opportunity City">⇥</button>
       </div>
     </header>
     <section className="stage" aria-label={titles[scene]}>
       <img src={`${ASSETS}/slide-${num}.webp`} alt={alts[scene]}/>
-      {scene<13&&<><div className={`caption-mask ${started?"visible":""}`} aria-hidden="true"/><video ref={video} className="caption-video" src={`${ASSETS}/narration-${num}.mp4`} playsInline muted={!audioOn} preload="metadata" onPlay={()=>{setPlaying(true);setStarted(true)}} onPause={()=>setPlaying(false)} onEnded={()=>{setPlaying(false);setStarted(false);setInteractionReady(true)}}/></>}
+      {scene<13&&<><div className={`caption-mask ${started?"visible":""}`} aria-hidden="true"/><video ref={video} className="caption-video" src={`${ASSETS}/narration-${num}.mp4`} playsInline muted={!audioOn} preload="auto" onLoadedMetadata={e=>{e.currentTarget.playbackRate=j.playbackRate||1}} onPlay={e=>{e.currentTarget.playbackRate=j.playbackRate||1;setPlaying(true);setStarted(true)}} onPause={()=>setPlaying(false)} onEnded={()=>{setPlaying(false);setStarted(false);setInteractionReady(true)}}/></>}
       {scene<13&&started&&<button className="skip" onClick={skip}>Skip narration</button>}
       {scene<13&&!started&&!playing&&<button className="play-fallback" onClick={toggle}>▶ Play narration & captions</button>}
       {scene===1&&<MapHotspots completed={resumeComplete} go={s=>update({scene:s})} info={()=>setModal("skill-tree")}/>}
@@ -164,7 +165,7 @@ export default function ResumeDistrict(){
       {toast&&<div className="toast" role="status">{toast}</div>}
     </section>
     {!preview&&<nav className="phase-nav" aria-label="Resume District levels">{phases.slice(0,4).map(([label,start,end],i)=>{const active=scene>=start&&scene<=end,done=scene>end;return <button key={label} disabled={scene<start} className={active?"active":done?"done":""} onClick={()=>update({scene:start})}><span>{done?"✓":i+1}</span>{label}</button>})}</nav>}
-    {modal&&<Modal title={modalTitle(modal)} close={()=>setModal(null)}>{renderModal(modal,j,answer,complete,()=>setModal(null),s=>update({scene:s}))}</Modal>}
+    {modal&&<Modal title={modalTitle(modal)} close={()=>setModal(null)}>{modal==="access"?<AccessibilityPanel j={j} scene={scene} onUpdate={p=>update(p)} close={()=>setModal(null)}/>:renderModal(modal,j,answer,complete,()=>setModal(null),s=>update({scene:s}))}</Modal>}
     <span className="sr-only" aria-live="polite">{required.filter(x=>j.completed.includes(x)).length} of {required.length} required activities complete.</span>
   </main>
 }
@@ -175,6 +176,18 @@ function MapHotspots({completed,go,info}:{completed:boolean;go:(s:number)=>void;
 function Modal({title,close,children}:{title:string;close:()=>void;children:React.ReactNode}){return <div className="modal-backdrop" onMouseDown={e=>e.target===e.currentTarget&&close()}><section className="modal" role="dialog" aria-modal="true" aria-label={title}><header><div><p className="kicker">RESUME DISTRICT • SKILL LAB</p><h2>{title}</h2></div><button className="close" onClick={close} aria-label="Close">×</button></header>{children}</section></div>}
 function Choices({label,items,value,onChange,multi=false}:{label:string;items:string[];value?:string|string[];onChange:(v:any)=>void;multi?:boolean}){const chosen=(x:string)=>Array.isArray(value)?value.includes(x):value===x;return <fieldset><legend>{label}</legend><div className="choices">{items.map(x=><button key={x} className={chosen(x)?"selected":""} onClick={()=>multi?onChange(Array.isArray(value)?(chosen(x)?value.filter(v=>v!==x):[...value,x]):[x]):onChange(x)}>{chosen(x)?"✓ ":""}{x}</button>)}</div></fieldset>}
 function Field({label,value,onChange,placeholder=""}:{label:string;value?:string;onChange:(v:string)=>void;placeholder?:string}){return <label>{label}<input value={value||""} placeholder={placeholder} onChange={e=>onChange(e.target.value)}/></label>}
+function AccessibilityPanel({j,scene,onUpdate,close}:{j:Journey;scene:number;onUpdate:(p:Partial<Journey>)=>void;close:()=>void}){
+  return <>
+    <div className="scene-description"><strong>Describe this scene</strong><p>{alts[scene]}</p></div>
+    <div className="accessibility-options" aria-label="Accessibility preferences">
+      <label className="preference-row"><span><strong>Larger interface text</strong><small>Increases controls and readable text without changing the artwork.</small></span><input type="checkbox" checked={j.largeText} onChange={e=>onUpdate({largeText:e.target.checked})}/></label>
+      <label className="preference-row"><span><strong>Reduce motion</strong><small>Turns off pulses and decorative movement.</small></span><input type="checkbox" checked={j.reducedMotion} onChange={e=>onUpdate({reducedMotion:e.target.checked})}/></label>
+      <fieldset className="speed-options"><legend>Narration speed</legend><div>{[0.75,1,1.25,1.5].map(rate=><button key={rate} type="button" className={j.playbackRate===rate?"selected":""} aria-pressed={j.playbackRate===rate} onClick={()=>onUpdate({playbackRate:rate})}>{rate}×</button>)}</div></fieldset>
+    </div>
+    <p className="caption-note">Captions are included with every narration video. You can pause, replay, mute, change speed, or skip narration without losing access to the scene.</p>
+    <button className="primary" onClick={close}>Return to Resume District</button>
+  </>
+}
 function renderModal(kind:string,j:Journey,answer:(p:Partial<Answers>)=>void,complete:(id:string,xp:number)=>void,close:()=>void,go:(s:number)=>void){
   const a=j.answers;
   if(kind.startsWith("source:")){const source=kind.slice(7) as Source,l=sourceLessons[source],saved=a.experienceResponses?.[source]||{skills:[],note:""};const save=(p:Partial<{skills:string[];note:string}>)=>answer({experienceResponses:{...(a.experienceResponses||{}),[source]:{...saved,...p}},experienceSource:source,experienceSkills:p.skills||saved.skills,experienceNote:p.note??saved.note});return <><p>{l.body}</p><Choices label="Which skills can this experience show?" items={l.skills} value={saved.skills} multi onChange={v=>save({skills:v})}/><Field label="What is one example from your experience?" value={saved.note} onChange={v=>save({note:v})} placeholder="A short, truthful example"/><button className="primary" disabled={!saved.skills.length||!saved.note.trim()} onClick={()=>{complete("source-"+slug(source),50);close()}}>I can use this experience • 50 XP</button></>}
