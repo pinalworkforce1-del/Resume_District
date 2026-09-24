@@ -255,3 +255,82 @@
   height:30px;
   font-size:.86rem;
 }
+
+/* Resume District utility controls — Discovery parity */
+.controls{
+  align-items:center;
+  flex-wrap:wrap;
+}
+.controls .utility-button{
+  min-height:36px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 10px;
+  border:1px solid #3fdff066;
+  border-radius:9px;
+  background:#102344;
+  color:#e9faff;
+  font-size:.72rem;
+  font-weight:900;
+  white-space:nowrap;
+}
+.controls .utility-button:hover,
+.controls .utility-button:focus-visible{
+  border-color:#5ceaff;
+  background:#17345d;
+  box-shadow:0 0 18px #2bdcf744;
+}
+.controls .utility-button b,
+.sync-labeled b{
+  font-size:.68rem;
+  font-weight:900;
+  letter-spacing:.03em;
+}
+.controls .city-return{
+  color:#e5fbff;
+}
+.sync-labeled{
+  min-height:36px;
+  width:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 10px;
+  border:1px solid #344b77;
+  border-radius:9px;
+  background:#08142e;
+  white-space:nowrap;
+}
+.sync-labeled.saved{
+  border-color:#58e7b166;
+  background:#0b2a28;
+}
+.sync-labeled.saving{
+  border-color:#ffe06466;
+  background:#2b250b;
+}
+.sync-labeled.error{
+  border-color:#ff778d66;
+  background:#32131b;
+}
+.clear-button{
+  border-color:#7d6a9c!important;
+}
+.help-guide p{
+  margin:.7rem 0;
+}
+@media(max-width:1080px){
+  .controls .utility-button b,
+  .sync-labeled b{
+    display:none;
+  }
+  .controls .utility-button,
+  .sync-labeled{
+    width:36px;
+    min-width:36px;
+    padding:8px;
+  }
+}
