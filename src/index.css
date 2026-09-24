@@ -226,3 +226,32 @@
   .source-3::before{left:47%;top:101%}
   .source-4::before{left:70%;top:126%}
 }
+
+/* Transferable Skills hotspot alignment — 2026-09-23 */
+/* The artwork already labels each skill, so keep only the visible click beacon. */
+.skill-zone span{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+
+/* Beacon positions are relative to the existing larger hit areas.
+   These centers align with the illustrated medallions in slide-04.webp. */
+.skill-0::before{left:69%;top:63%;} /* Teamwork */
+.skill-1::before{left:53%;top:55%;} /* Leadership */
+.skill-2::before{left:49%;top:41%;} /* Communication */
+.skill-3::before{left:40%;top:64%;} /* Reliability */
+.skill-4::before{left:30%;top:32%;} /* Problem Solving */
+
+.skill-zone::before{
+  width:30px;
+  height:30px;
+  font-size:.86rem;
+}
