@@ -41,3 +41,29 @@
   .level-up-scene-rail{grid-template-columns:repeat(2,1fr)}
   .level-up-standard .caption-mask{left:6%;right:6%;height:13%}
 }
+
+
+/* Resume District control parity — 2026-09-24 */
+.topbar .controls .scene-source-control{display:none!important}
+.large-text{font-size:1.08em}
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after{animation:none!important;transition:none!important}
+.scene-description{margin:0 0 16px;padding:14px;border:1px solid #2d8aaa;border-radius:12px;background:#07162f}
+.scene-description strong{display:block;margin-bottom:6px;color:#68eaff}
+.accessibility-options{display:grid;gap:10px;margin:14px 0}
+.preference-row{display:flex!important;justify-content:space-between;align-items:center;gap:16px;margin:0!important;padding:12px 14px;border:1px solid #344873;border-radius:12px;background:#080e27}
+.preference-row span{display:grid;gap:3px}
+.preference-row small{color:#aab5d5;font-weight:500}
+.preference-row input{width:22px!important;height:22px;margin:0}
+.speed-options{border:1px solid #344873!important;border-radius:12px;padding:12px!important}
+.speed-options legend{padding:0 6px}
+.speed-options div{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.speed-options button{padding:10px;border:1px solid #344873;border-radius:10px;background:#07172f;color:white;font-weight:900}
+.speed-options button.selected{border-color:#5de6b6;background:#0d3b36}
+.caption-note{padding:12px;border-left:3px solid #54e9ff;background:#07162f;color:#d6def5}
+@media(max-width:1100px){
+  .level-up-scene-rail{grid-template-columns:repeat(6,1fr)}
+}
+@media(max-width:650px){
+  .level-up-scene-rail{grid-template-columns:repeat(3,1fr)}
+  .speed-options div{grid-template-columns:repeat(2,1fr)}
+}
