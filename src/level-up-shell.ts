@@ -15,6 +15,14 @@ function currentContinue() {
   return document.querySelector<HTMLButtonElement>(".stage .shell-continue-trigger");
 }
 
+function currentPrevious(){
+  return findHeaderButton(/Previous scene|Back to district map/i);
+}
+
+function accessibilityButton(){
+  return findHeaderButton(/Accessibility and scene description/i);
+}
+
 function delay(ms:number){
   return new Promise<void>(resolve=>window.setTimeout(resolve,ms));
 }
@@ -77,12 +85,24 @@ function buildRail() {
   rail.setAttribute("aria-label", "Scene controls");
   rail.innerHTML = `
     <small>SCENE CONTROLS</small>
+    <button type="button" data-shell="previous"><span class="control-icon">←</span><span class="control-label">Previous scene</span></button>
+    <button type="button" data-shell="access"><span class="control-icon">◉</span><span class="control-label">Accessibility</span></button>
     <button type="button" data-shell="audio"><span class="control-icon">🔊</span><span class="control-label">Audio on</span></button>
     <button type="button" data-shell="replay"><span class="control-icon">↻</span><span class="control-label">Replay narration</span></button>
     <button type="button" data-shell="skip"><span class="control-icon">↠</span><span class="control-label">Skip narration</span></button>
     <button type="button" data-shell="play"><span class="control-icon">▶</span><span class="control-label">Play narration</span></button>
     <button type="button" class="rail-continue" data-shell="continue">Continue <span>→</span></button>
   `;
+
+  rail.querySelector<HTMLButtonElement>('[data-shell="previous"]')!.addEventListener("click", () => {
+    currentPrevious()?.click();
+    queueRefresh();
+  });
+
+  rail.querySelector<HTMLButtonElement>('[data-shell="access"]')!.addEventListener("click", () => {
+    accessibilityButton()?.click();
+    queueRefresh();
+  });
 
   rail.querySelector<HTMLButtonElement>('[data-shell="audio"]')!.addEventListener("click", () => {
     findHeaderButton(/Mute narration|Turn on narration/i)?.click();
@@ -138,11 +158,18 @@ function refreshRail() {
   const video = currentVideo();
   bindVideo(video);
   const hasNarration = Boolean(video);
+  const previousButton = rail.querySelector<HTMLButtonElement>('[data-shell="previous"]')!;
+  const accessButton = rail.querySelector<HTMLButtonElement>('[data-shell="access"]')!;
   const audioButton = rail.querySelector<HTMLButtonElement>('[data-shell="audio"]')!;
   const replayButton = rail.querySelector<HTMLButtonElement>('[data-shell="replay"]')!;
   const skipButton = rail.querySelector<HTMLButtonElement>('[data-shell="skip"]')!;
   const playButton = rail.querySelector<HTMLButtonElement>('[data-shell="play"]')!;
   const continueButton = rail.querySelector<HTMLButtonElement>('[data-shell="continue"]')!;
+
+  const previousSource=currentPrevious();
+  previousButton.hidden=!previousSource;
+  previousButton.disabled=!previousSource||previousSource.disabled;
+  accessButton.disabled=!accessibilityButton();
 
   const muted = video?.muted ?? false;
   audioButton.disabled = !hasNarration;
