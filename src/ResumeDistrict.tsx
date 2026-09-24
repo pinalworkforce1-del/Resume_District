@@ -127,14 +127,15 @@ export default function ResumeDistrict(){
       <div className="brand"><b>LU</b><span>LEVEL UP<small>RESUME DISTRICT</small></span></div>
       <div className="hud"><span>{titles[scene]}</span><div><i style={{width:`${Math.min((visibleScene/visibleSceneCount)*100,100)}%`}}/></div><small>{preview?"DISTRICT PREVIEW":bonus?"BONUS SCENE":`SCENE ${visibleScene} OF ${visibleSceneCount}`}</small><strong>{j.xp} XP</strong></div>
       <div className="controls">
-        <span className={`sync ${sync}`} title={sync==="saved"?"Progress saved":sync==="saving"?"Saving progress":sync==="error"?"Save problem":"Saved locally"}>{sync==="error"?"☁̸":"☁"}</span>
+        <button className="utility-button city-return" onClick={()=>window.location.assign(PORTAL+"?from=resume-district")} aria-label="Back to Opportunity City" title="Back to Opportunity City"><span aria-hidden="true">←</span><b>Opportunity City</b></button>
+        <span className={`sync sync-labeled ${sync}`} title={sync==="saved"?"Progress saved to Level Up":sync==="saving"?"Saving progress":sync==="error"?"Cloud save paused — progress remains on this device":"Progress saved on this device"}><span aria-hidden="true">{sync==="error"?"☁̸":"☁"}</span><b>{sync==="saving"?"Saving":sync==="error"?"Device saved":sync==="saved"?"Saved":"Local"}</b></span>
         <button className="scene-source-control" onClick={preview?()=>update({scene:1}):previous} disabled={scene===0} aria-label={preview?"Back to district map":"Previous scene"}>←</button>
         <button className="resume-library" onClick={()=>window.open(MY_RESUMES,"_blank","noopener")} aria-label="Open My Résumés">My Résumés</button>
+        <button className="utility-button help-button" onClick={()=>setModal("help")} aria-label="Open Resume District help" title="Help"><span aria-hidden="true">?</span><b>Help</b></button>
         <button className="scene-source-control" onClick={()=>setModal("access")} aria-label="Accessibility and scene description">◉</button>
         <button className="scene-source-control" onClick={toggle} disabled={scene>=13} aria-label={playing?"Pause narration":"Play narration"}>{playing?"Ⅱ":"▶"}</button>
         <button className="scene-source-control" onClick={()=>setAudioOn(v=>!v)} disabled={scene>=13} aria-label={audioOn?"Mute narration":"Turn on narration"}>{audioOn?"🔊":"🔇"}</button>
-        <button onClick={restart} aria-label="Restart Resume District">↻</button>
-        <button onClick={()=>supabase?.auth.signOut()} aria-label="Return to Opportunity City" title="Return to Opportunity City">⇥</button>
+        <button className="utility-button clear-button" onClick={restart} aria-label="Clear Resume District progress" title="Clear Resume District progress"><span aria-hidden="true">↻</span><b>Clear</b></button>
       </div>
     </header>
     <section className="stage" aria-label={titles[scene]}>
