@@ -201,6 +201,7 @@ function renderModal(kind:string,j:Journey,answer:(p:Partial<Answers>)=>void,com
       experienceSkills:p.skills||saved.skills,
       experienceNote:p.note??saved.note
     });
+    const setFit=(choice:"use"|"not-me")=>answer({experienceFit:{...(a.experienceFit||{}),[source]:choice}});
     const finish=(choice:"use"|"not-me")=>{
       answer({experienceFit:{...(a.experienceFit||{}),[source]:choice}});
       complete("source-"+slug(source),50);
@@ -208,13 +209,21 @@ function renderModal(kind:string,j:Journey,answer:(p:Partial<Answers>)=>void,com
     };
     return <>
       <p>{l.body}</p>
-      <Choices label="Which skills can this experience show?" items={l.skills} value={saved.skills} multi onChange={v=>save({skills:v})}/>
-      <Field label="What is one example from your experience?" value={saved.note} onChange={v=>save({note:v})} placeholder="A short, truthful example"/>
-      <div className="source-outcomes">
-        <button className="primary" disabled={!saved.skills.length||!saved.note.trim()} onClick={()=>finish("use")}>I can use this experience • 50 XP</button>
-        <button className="secondary honest-exit" onClick={()=>finish("not-me")}>This experience doesn’t fit me • 50 XP</button>
+      <div className="source-fit-check">
+        <b>Is this part of your experience?</b>
+        <div className="source-fit-actions">
+          <button className={fit==="use"?"selected":""} onClick={()=>setFit("use")}>Yes — I have experience like this</button>
+          <button className="honest-exit" onClick={()=>finish("not-me")}>No — this doesn’t fit me • 50 XP</button>
+        </div>
       </div>
-      <p className="source-integrity-note">Both choices count as exploration. Choose the option that is true for you—you never need to invent an example.</p>
+      {fit==="use"&&<>
+        <Choices label="Which skills can this experience show?" items={l.skills} value={saved.skills} multi onChange={v=>save({skills:v})}/>
+        <Field label="What is one example from your experience?" value={saved.note} onChange={v=>save({note:v})} placeholder="A short, truthful example"/>
+        <div className="source-outcomes">
+          <button className="primary" disabled={!saved.skills.length||!saved.note.trim()} onClick={()=>finish("use")}>Save this experience • 50 XP</button>
+        </div>
+      </>}
+      <p className="source-integrity-note">Exploring every option helps you notice what fits. If it does not fit your experience, choose No and move on—no example is required.</p>
     </>
   }
   if(kind.startsWith("skill:")){const id=kind.slice(6),s=skillLessons.find(x=>x[0]===id)!,reflection=a.skillReflections?.[id]||"";return <><div className="micro"><h3>{s[1]} in action</h3><p>{s[2]}</p><h3>Why employers value it</h3><p>{s[3]}</p></div><Field label="Where have you already used this skill?" value={reflection} onChange={v=>answer({skillReflections:{...(a.skillReflections||{}),[id]:v}})} placeholder="A short example from work, school, home, or your community"/><button className="primary" disabled={!reflection.trim()} onClick={()=>{complete("skill-"+id,25);close()}}>Skill explored • 25 XP</button></>}
