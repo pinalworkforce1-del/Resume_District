@@ -370,3 +370,38 @@
   .source-3{left:53.49%!important;top:70.7%!important}
   .source-4{left:73.4%!important;top:72.7%!important}
 }
+
+
+/* Honest experience exploration outcomes */
+.source-outcomes{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  margin-top:12px;
+}
+.source-outcomes .secondary{
+  padding:12px 16px;
+  border:1px solid #65779d;
+  border-radius:11px;
+  background:#111936;
+  color:#e9efff;
+  font-weight:900;
+  cursor:pointer;
+}
+.source-outcomes .secondary:hover,
+.source-outcomes .secondary:focus-visible{
+  border-color:#79dff0;
+  outline:2px solid #79dff033;
+  outline-offset:2px;
+}
+.source-integrity-note{
+  margin:10px 0 0;
+  color:#aab6d0;
+  font-size:.82rem;
+  line-height:1.4;
+}
+@media(max-width:700px){
+  .source-outcomes{justify-content:stretch}
+  .source-outcomes button{width:100%}
+}
