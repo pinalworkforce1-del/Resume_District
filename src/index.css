@@ -405,3 +405,47 @@
   .source-outcomes{justify-content:stretch}
   .source-outcomes button{width:100%}
 }
+
+
+/* Experience fit-first decision */
+.source-fit-check{
+  margin:14px 0 6px;
+  padding:14px;
+  border:1px solid #3f5f91;
+  border-radius:12px;
+  background:#0a1430;
+}
+.source-fit-check>b{
+  display:block;
+  margin-bottom:10px;
+  color:#f3f7ff;
+}
+.source-fit-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.source-fit-actions button{
+  min-height:48px;
+  padding:11px 13px;
+  border:1px solid #51658f;
+  border-radius:10px;
+  background:#111936;
+  color:#eef3ff;
+  font-weight:900;
+  cursor:pointer;
+}
+.source-fit-actions button.selected{
+  border-color:#54e6b7;
+  background:#124c42;
+  color:#fff;
+}
+.source-fit-actions button:hover,
+.source-fit-actions button:focus-visible{
+  border-color:#61def1;
+  outline:2px solid #61def133;
+  outline-offset:2px;
+}
+@media(max-width:700px){
+  .source-fit-actions{grid-template-columns:1fr}
+}
