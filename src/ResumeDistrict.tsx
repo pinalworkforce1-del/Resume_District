@@ -13,12 +13,12 @@ type Answers = {
   keywordTakeaway?:string; digitalTakeaway?:string; integrityTakeaway?:string; emailTakeaway?:string;
   support?:string; lesson?:string; addThisWeek?:string; nextAction?:string;
 };
-type Journey={name:string;scene:number;xp:number;completed:string[];answers:Answers;completionDate:string;playbackRate:number;reducedMotion:boolean;largeText:boolean};
+type Journey={name:string;scene:number;xp:number;completed:string[];answers:Answers;completionDate:string;playbackRate:number;reducedMotion:boolean;largeText:boolean;mazeXpV1?:boolean};
 const STORE_BASE="level-up-resume-district-ux-v4";
 const storeFor=(userId:string)=>`${STORE_BASE}:${userId}`;
 const MODULE_ID="resume-district";
 const profileNameKey=(userId:string)=>`level-up-profile-name-v1:${userId}`;
-const EMPTY:Journey={name:"",scene:0,xp:0,completed:[],answers:{},completionDate:"",playbackRate:1,reducedMotion:false,largeText:false};
+const EMPTY:Journey={name:"",scene:0,xp:0,completed:[],answers:{},completionDate:"",playbackRate:1,reducedMotion:false,largeText:false,mazeXpV1:false};
 const ASSETS="assets/resume/scenes";
 const PORTAL="https://pinalworkforce1-del.github.io/Level_Up_Portal/";
 const RESUME_BUILDER="https://pinalworkforce1-del.github.io/LU_Discovery/resume-builder-prototype.html";
@@ -97,6 +97,7 @@ export default function ResumeDistrict(){
   useEffect(()=>{if(ready&&session){localStorage.setItem(storeFor(session.user.id),JSON.stringify(j));(window as any).LevelUpOfflineProgress?.save(MODULE_ID,j,{xp:j.xp,isComplete:j.completed.includes("reflection"),completedAt:j.completionDate||null})}},[j,ready,session?.user.id]);
   useEffect(()=>{if(!supabase){setAuthReady(true);return}let active=true;const timer=window.setTimeout(()=>{if(active)setAuthReady(true)},2500);supabase.auth.getSession().then(({data})=>{if(!active)return;window.clearTimeout(timer);setSession(data.session);setAuthReady(true)}).catch(()=>{if(active)setAuthReady(true)});const {data}=supabase.auth.onAuthStateChange((_event,next)=>{setSession(next);setAuthReady(true)});return()=>{active=false;window.clearTimeout(timer);data.subscription.unsubscribe()}},[]);
   useEffect(()=>{if(!session||!supabase)return;Promise.all([supabase.from("module_progress").select("journey_state").eq("user_id",session.user.id).eq("module_id",MODULE_ID).maybeSingle(),supabase.from("profiles").select("display_name").eq("user_id",session.user.id).maybeSingle()]).then(([progress,profile])=>{if(progress.error||profile.error){setSync("error");return}const canonical=(profile.data?.display_name||"").trim();if(canonical)localStorage.setItem(profileNameKey(session.user.id),canonical);setProfileName(canonical||profileName);if(progress.data?.journey_state){const remote={...EMPTY,...progress.data.journey_state} as Journey;setJ(local=>{const chosen=remote.completed.length>local.completed.length||remote.xp>local.xp?remote:local;return canonical?{...chosen,name:canonical}:chosen})}else if(canonical)setJ(local=>({...local,name:canonical}));setSync("saved")})},[session?.user.id]);
+  useEffect(()=>{if(!ready||j.mazeXpV1)return;const legacyTips=tipNames.filter(t=>j.completed.includes("tip-"+slug(t))).length;setJ(v=>({...v,xp:v.xp+(legacyTips*25),mazeXpV1:true}));},[ready,j.mazeXpV1]);
   useEffect(()=>{if(!session||!supabase||!ready)return;setSync("saving");const timer=setTimeout(async()=>{const done=j.completed.includes("reflection");const {error}=await supabase!.from("module_progress").upsert({user_id:session.user.id,module_id:MODULE_ID,journey_state:j,xp:j.xp,is_complete:done,completed_at:j.completionDate||null},{onConflict:"user_id,module_id"});if(!error)(window as any).LevelUpOfflineProgress?.markSynced(MODULE_ID);setSync(error?"error":"saved")},800);return()=>clearTimeout(timer)},[j,session?.user.id,ready]);
   useEffect(()=>{video.current?.pause();setPlaying(false);setStarted(false);setInteractionReady(scene>=13);video.current?.load();},[scene]);
   useEffect(()=>{if(video.current)video.current.playbackRate=j.playbackRate||1},[j.playbackRate,scene]);
@@ -105,7 +106,7 @@ export default function ResumeDistrict(){
   const resumeComplete=j.completed.includes("reflection");
   function update(p:Partial<Journey>){setJ(v=>({...v,...p}))}
   function answer(p:Partial<Answers>){setJ(v=>({...v,answers:{...v.answers,...p}}))}
-  function complete(id:string,xp:number){setJ(v=>({...v,xp:v.completed.includes(id)?v.xp:v.xp+xp,completed:v.completed.includes(id)?v.completed:[...v.completed,id],completionDate:id==="reflection"?(v.completionDate||new Date().toISOString()):v.completionDate}));setToast(`+${xp} XP`);setTimeout(()=>setToast(""),1800)}
+  function complete(id:string,xp:number){const already=j.completed.includes(id);setJ(v=>({...v,xp:v.completed.includes(id)?v.xp:v.xp+xp,completed:v.completed.includes(id)?v.completed:[...v.completed,id],completionDate:id==="reflection"?(v.completionDate||new Date().toISOString()):v.completionDate}));if(!already&&xp>0){setToast(`+${xp} XP`);setTimeout(()=>setToast(""),1800)}}
   function next(){if(scene===5)update({scene:7});else if(scene<16)update({scene:scene+1})}
   function previous(){if(scene===7)update({scene:5});else if(scene===6)update({scene:5});else if(scene>0)update({scene:scene-1})}
   function toggle(){if(!video.current||scene>=13)return;playing?video.current.pause():video.current.play().catch(()=>{})}
@@ -152,8 +153,8 @@ export default function ResumeDistrict(){
       {scene===4&&interactionReady&&<button className={`image-zone email-zone ${j.completed.includes("email")?"done":""}`} onClick={()=>setModal("email")} aria-label="Open professional email checkpoint"><span>Professional email checkpoint</span><b>Check your professional email</b></button>}
       {scene===5&&interactionReady&&<>
         {bonusUnlocked&&<button className={`image-zone xp-scroll unlocked ${j.completed.includes("recruiter-bonus")?"done":""}`} onClick={()=>update({scene:6})} aria-label="Open recruiter perspective bonus scene"><span>Bonus recruiter perspective</span><b>Bonus XP</b></button>}
-        {j.completed.includes("anatomy")&&tipNames.map((x,i)=><button key={x} className={`tip-zone tip-${i} ${j.completed.includes("tip-"+slug(x))?"done":""}`} onClick={()=>{complete("tip-"+slug(x),0);setModal("tip:"+x)}} aria-label={`Explore tip: ${x}`}><span>{x}</span></button>)}
-        <div className="explore-hint">{j.completed.includes("anatomy")?`Explore 3 résumé clues to unlock bonus XP • ${tipDone} explored`:"Begin with résumé anatomy"}</div>
+        {j.completed.includes("anatomy")&&tipNames.map((x,i)=><button key={x} className={`tip-zone tip-${i} ${j.completed.includes("tip-"+slug(x))?"done":""}`} onClick={()=>{complete("tip-"+slug(x),25);setModal("tip:"+x)}} aria-label={`Explore tip: ${x}`}><span>{x}</span></button>)}
+        <div className="explore-hint">{j.completed.includes("anatomy")?tipDone===8?`Maze cleared • 250 XP path completed`:`Explore 3 résumé clues to unlock bonus scene • ${tipDone} of 8 explored • Full maze = 250 XP`:"Begin with résumé anatomy"}</div>
         <button className="activity-trigger anatomy" onClick={()=>setModal("anatomy")}>✦ {j.completed.includes("anatomy")?"Review":"Explore"} résumé anatomy</button>
       </>}
       {scene===6&&interactionReady&&<button className="activity-trigger recruiter" onClick={()=>setModal("recruiter")}>✦ Sort the recruiter stacks</button>}
