@@ -334,3 +334,39 @@
     padding:8px;
   }
 }
+
+
+/* Experience hotspot hitbox correction — 2026-09-24
+   The visible beacons were previously offset outside the legacy source-zone
+   button rectangles. Center the actual button hitbox on each visible beacon
+   so the glowing icon itself is the true click/touch target. */
+.source-zone{
+  width:8%!important;
+  height:12%!important;
+}
+.source-0{left:35.03%!important;top:20%!important}
+.source-1{left:80.96%!important;top:35.2%!important}
+.source-2{left:42.58%!important;top:58.2%!important}
+.source-3{left:54.99%!important;top:72.2%!important}
+.source-4{left:74.9%!important;top:74.2%!important}
+
+.source-0::before,
+.source-1::before,
+.source-2::before,
+.source-3::before,
+.source-4::before{
+  left:50%!important;
+  top:50%!important;
+}
+
+@media(max-width:760px){
+  .source-zone{
+    width:11%!important;
+    height:15%!important;
+  }
+  .source-0{left:33.53%!important;top:18.5%!important}
+  .source-1{left:79.46%!important;top:33.7%!important}
+  .source-2{left:41.08%!important;top:56.7%!important}
+  .source-3{left:53.49%!important;top:70.7%!important}
+  .source-4{left:73.4%!important;top:72.7%!important}
+}
