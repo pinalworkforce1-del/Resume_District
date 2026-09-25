@@ -212,7 +212,7 @@ function renderModal(kind:string,j:Journey,answer:(p:Partial<Answers>)=>void,com
       <div className="source-fit-check">
         <b>Is this part of your experience?</b>
         <div className="source-fit-actions">
-          <button className={fit==="use"?"selected":""} onClick={()=>setFit("use")}>Yes — I have experience like this</button>
+          <button className={fit==="use"?"selected":""} onClick={()=>setFit("use")}>Yes — I have experience like this • 50 XP</button>
           <button className="honest-exit" onClick={()=>finish("not-me")}>No — this doesn’t fit me • 50 XP</button>
         </div>
       </div>
