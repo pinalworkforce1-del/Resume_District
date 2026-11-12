@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const source=fs.readFileSync('src/ResumeDistrict.tsx','utf8');
+const expected='https://pinalworkforce1-del.github.io/Level-Up-Resume-Staging/?from=resume-district';
+assert.ok(source.includes('const RESUME_BUILDER="'+expected+'";'),'District points at isolated Nova staging with explicit return context');
+assert.ok(source.includes('href={RESUME_BUILDER}'),'Reflection completion opens the staged builder');
+assert.ok(source.includes('const MODULE_ID="resume-district"'),'District learning progress remains its own module');
+assert.ok(source.includes('const MY_RESUMES='),'Existing résumé library remains available');
+assert.ok(!source.includes('const RESUME_BUILDER="https://pinalworkforce1-del.github.io/LU_Discovery/resume-builder-prototype.html";'),'Old reconstructed builder not used in staged branch');
+console.log('PASS Resume District staged Nova route and independent learning progress');
