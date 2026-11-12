@@ -21,8 +21,8 @@ const profileNameKey=(userId:string)=>`level-up-profile-name-v1:${userId}`;
 const EMPTY:Journey={name:"",scene:0,xp:0,completed:[],answers:{},completionDate:"",playbackRate:1,reducedMotion:false,largeText:false,mazeXpV1:false};
 const ASSETS="assets/resume/scenes";
 const PORTAL="https://pinalworkforce1-del.github.io/Level_Up_Portal/";
-const RESUME_BUILDER="https://pinalworkforce1-del.github.io/LU_Discovery/resume-builder-prototype.html";
-const MY_RESUMES="https://pinalworkforce1-del.github.io/LU_Discovery/my-resumes.html";
+const RESUME_BUILDER="https://pinalworkforce1-del.github.io/Level-Up-Resume-Staging/?from=resume-district";
+const MY_RESUMES="https://pinalworkforce1-del.github.io/Level-Up-Resume-Staging/my-resumes.html";
 const titles=["Enter Resume District","The District Map","No Experience? Look Again","Transferable Skills Unlocked","Interview Access","Build the Right Path","Recruiter Perspective","The Keyword Forge","Protect Your Brand","Integrity Unlocked","Your Résumé, Built","Interview Gate Unlocked","Level Up Reflection","Resume District","Interview Arena","First Day Challenge","Money Moves"];
 const alts=[
   "A learner enters a neon city where Resume District is the first destination.",
