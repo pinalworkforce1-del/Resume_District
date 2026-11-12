@@ -91,8 +91,8 @@ replaceOne(
 
 replaceOne(
   "completion actions",
-  '{scene===12&&resumeComplete&&<div className="completion-actions"><h2>Reflection Complete ✓</h2><p>Put the evidence to work in Resume Builder. Your Level Up account will keep your working résumé and saved targeted versions.</p><div><a className="primary-action" href={RESUME_BUILDER}>Open Resume Builder →</a><a href={MY_RESUMES}>My Résumés</a><button onClick={()=>setModal("review")}>View Resume District Review</button><button onClick={()=>update({scene:1})}>Return to District Map</button><a href={PORTAL}>Enter Interview Arena</a></div></div>}\n      {scene===12&&resumeComplete&&<a className="interview-icon-link" href={PORTAL} aria-label="Interview Arena is available after Resume District"><span>Enter Interview Arena</span></a>}',
-  '{scene===12&&resumeComplete&&<div className="completion-actions"><h2>Reflection Complete ✓</h2><p>Put the evidence to work in Resume Builder. Your Level Up account will keep your working résumé and saved targeted versions.</p><div><a className="primary-action" href={RESUME_BUILDER}>Open Resume Builder →</a><a href={MY_RESUMES}>My Résumés</a><button onClick={()=>setModal("review")}>View Resume District Review</button><a href={PORTAL}>Return to Opportunity City</a></div></div>}'
+  '<button onClick={()=>update({scene:1})}>Return to District Map</button><a href={PORTAL}>Enter Interview Arena</a></div></div>}\\n      {scene===12&&resumeComplete&&<a className="interview-icon-link" href={PORTAL} aria-label="Interview Arena is available after Resume District"><span>Enter Interview Arena</span></a>}',
+  '<a href={PORTAL}>Return to Opportunity City</a></div></div>}'
 );
 
 replaceOne(
